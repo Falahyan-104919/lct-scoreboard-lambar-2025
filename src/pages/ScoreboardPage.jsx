@@ -51,7 +51,8 @@ export default function ScoreboardPage() {
 
   return (
     <motion.div className="flex flex-col items-center justify-center min-h-screen min-w-screen bg-slate-900 text-white p-8 overflow-hidden">
-      <h1 className="text-6xl font-bold mb-12 tracking-wider">PAPAN SKOR</h1>
+      <h1 className="text-6xl font-bold mb-2 tracking-wider">PAPAN SKOR</h1>
+      {/* <h2 className="text-3xl font-bold mb-12 tracking-wider">Kelas SMP</h2>*/}
 
       {/* 2. Bungkus list dengan <AnimatePresence> untuk animasi keluar (exit) */}
       <motion.div layout className="w-full max-w-4xl space-y-4">
