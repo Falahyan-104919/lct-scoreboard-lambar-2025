@@ -1,56 +1,47 @@
 // src/hooks/useLomba.js
 import { useState, useEffect } from "react";
+import { doc, onSnapshot, setDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase"; // 1. Import instance Firestore
 
-const LOMBA_STORAGE_KEY = "dataLombaSkorCermat";
-
-// Fungsi untuk memuat data dari localStorage.
-const loadInitialData = () => {
-  try {
-    const dataTersimpan = localStorage.getItem(LOMBA_STORAGE_KEY);
-    if (dataTersimpan) {
-      return JSON.parse(dataTersimpan);
-    }
-  } catch (error) {
-    console.error("Gagal memuat data dari localStorage", error);
-  }
-  // Jika tidak ada data, kembalikan state default.
-  return { namaLomba: "Lomba Cerdas Cermat", tim: [] };
-};
+// 2. Tentukan lokasi data kita di Firestore
+// Kita akan menyimpan semua data lomba dalam satu dokumen
+const lombaDocRef = doc(db, "lomba", "sesi-utama");
 
 export const useLomba = () => {
-  // FIX 1: Lazy Initialization.
-  // Fungsi ini hanya akan dijalankan SEKALI saat komponen pertama kali dibuat.
-  // Ini mencegah masalah data ter-reset saat refresh.
-  const [lombaData, setLombaData] = useState(loadInitialData);
+  // State lokal untuk menampung data dari Firestore
+  const [lombaData, setLombaData] = useState({
+    namaLomba: "Memuat...",
+    tim: [],
+  });
 
-  // Efek untuk MENYIMPAN data setiap kali lombaData berubah
+  // 3. Gunakan onSnapshot untuk mendengarkan perubahan data secara real-time
   useEffect(() => {
-    try {
-      localStorage.setItem(LOMBA_STORAGE_KEY, JSON.stringify(lombaData));
-    } catch (error) {
-      console.error("Gagal menyimpan data ke localStorage", error);
-    }
-  }, [lombaData]);
-
-  // FIX 2: Menggunakan event 'storage' untuk sinkronisasi antar-tab.
-  // Efek ini akan berjalan ketika tab LAIN mengubah localStorage.
-  useEffect(() => {
-    const handleStorageChange = (event) => {
-      if (event.key === LOMBA_STORAGE_KEY) {
-        // Muat ulang state dari data baru yang ada di localStorage
-        setLombaData(loadInitialData());
+    const unsubscribe = onSnapshot(lombaDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        // Jika dokumen ada, update state lokal kita
+        setLombaData(docSnap.data());
+      } else {
+        // Jika dokumen belum ada, buat dokumen awal
+        console.log("Dokumen lomba belum ada, membuat data awal...");
+        setDoc(lombaDocRef, { namaLomba: "Lomba Cerdas Cermat", tim: [] });
       }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
+    });
 
     // Cleanup listener saat komponen tidak lagi digunakan
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, []); // Dependensi kosong agar hanya berjalan sekali.
+    return () => unsubscribe();
+  }, []); // Dependensi kosong agar hanya berjalan sekali
+
+  // 4. Buat fungsi untuk MENULIS data ke Firestore
+  const updateDataDiFirestore = async (dataBaru) => {
+    try {
+      await setDoc(lombaDocRef, dataBaru);
+    } catch (error) {
+      console.error("Gagal update data ke Firestore:", error);
+    }
+  };
 
   // --- Fungsi-fungsi untuk memanipulasi state ---
+  // Sekarang, fungsi ini akan memanggil updateDataDiFirestore
 
   const tambahTim = (namaTim) => {
     if (namaTim.trim() === "") return;
@@ -59,40 +50,41 @@ export const useLomba = () => {
       nama: namaTim,
       skor: 0,
     };
-    setLombaData((prevData) => ({
-      ...prevData,
-      tim: [...prevData.tim, timBaru],
-    }));
+    const dataTerbaru = { ...lombaData, tim: [...lombaData.tim, timBaru] };
+    updateDataDiFirestore(dataTerbaru);
   };
 
   const hapusTim = (id) => {
-    setLombaData((prevData) => ({
-      ...prevData,
-      tim: prevData.tim.filter((t) => t.id !== id),
-    }));
+    const dataTerbaru = {
+      ...lombaData,
+      tim: lombaData.tim.filter((t) => t.id !== id),
+    };
+    updateDataDiFirestore(dataTerbaru);
   };
 
   const updateSkor = (id, poin) => {
-    setLombaData((prevData) => ({
-      ...prevData,
-      tim: prevData.tim.map((t) =>
+    const dataTerbaru = {
+      ...lombaData,
+      tim: lombaData.tim.map((t) =>
         t.id === id ? { ...t, skor: t.skor + poin } : t,
       ),
-    }));
+    };
+    updateDataDiFirestore(dataTerbaru);
   };
 
   const resetSkor = () => {
-    setLombaData((prevData) => ({
-      ...prevData,
-      tim: prevData.tim.map((t) => ({ ...t, skor: 0 })),
-    }));
+    const dataTerbaru = {
+      ...lombaData,
+      tim: lombaData.tim.map((t) => ({ ...t, skor: 0 })),
+    };
+    updateDataDiFirestore(dataTerbaru);
   };
 
   const resetLomba = () => {
-    setLombaData({ namaLomba: "Lomba Cerdas Cermat Baru", tim: [] });
+    updateDataDiFirestore({ namaLomba: "Lomba Cerdas Cermat Baru", tim: [] });
   };
 
-  // Kita tetap mengekspos `tim` dan `namaLomba` secara terpisah untuk kemudahan
+  // State yang diekspos tetap sama, komponen lain tidak perlu tahu perubahannya
   return {
     namaLomba: lombaData.namaLomba,
     tim: lombaData.tim,

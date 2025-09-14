@@ -67,7 +67,7 @@ export default function AdminPage() {
     <div className="space-y-6 min-w-screen">
       <Card>
         <CardHeader>
-          <CardTitle>Panel Admin Skor Cermat</CardTitle>
+          <CardTitle>Panel Admin Skor Cerdas Cermat</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-2">
