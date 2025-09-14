@@ -5,6 +5,9 @@ import path from "path";
 
 // https://vite.dev/config/
 export default defineConfig({
+  preview: {
+    port: 3425, // Set your desired port for preview
+  },
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
