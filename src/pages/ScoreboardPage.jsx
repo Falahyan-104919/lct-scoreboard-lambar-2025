@@ -51,11 +51,15 @@ export default function ScoreboardPage() {
 
   return (
     <motion.div className="flex flex-col items-center justify-center min-h-screen min-w-screen bg-slate-900 text-white p-8 overflow-hidden">
-      <h1 className="text-6xl font-bold mb-2 tracking-wider">PAPAN SKOR</h1>
-      {/* <h2 className="text-3xl font-bold mb-12 tracking-wider">Kelas SMP</h2>*/}
+      <h1 className="text-4xl md:text-6xl font-bold mb-3 tracking-wider">
+        PAPAN SKOR LCT
+      </h1>
+      <h2 className="text-2xl md:text-4xl font-bold mb-2 tracking-wider">
+        Juara Harapan - Tingkat SMP
+      </h2>
 
       {/* 2. Bungkus list dengan <AnimatePresence> untuk animasi keluar (exit) */}
-      <motion.div layout className="w-full max-w-4xl space-y-4">
+      <motion.div layout className="w-full max-w-7xl space-y-6">
         <AnimatePresence>
           {displayedTim.map((t, index) => (
             <motion.div
@@ -65,12 +69,14 @@ export default function ScoreboardPage() {
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, x: -100, transition: { duration: 0.3 } }} // Animasi saat tim dihapus
-              className="bg-slate-800 border border-slate-700 rounded-lg flex items-center p-6 shadow-lg"
+              className="bg-slate-800 border border-slate-700 rounded-lg flex items-center p-6 shadow-lg gap-2"
             >
-              <div className="text-5xl font-bold w-24 text-slate-400">
+              <div className="text-5xl font-bold w-24 text-slate-400 -ml-4">
                 #{index + 1}
               </div>
-              <div className="text-4xl font-semibold flex-grow">{t.nama}</div>
+              <div className="text-4xl font-semibold flex-grow break-words">
+                {t.nama}
+              </div>
               <div className="text-6xl font-bold text-yellow-400 w-48 text-right">
                 <AnimatedCounter to={t.skor} />
               </div>
