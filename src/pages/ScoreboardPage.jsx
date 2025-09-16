@@ -55,7 +55,7 @@ export default function ScoreboardPage() {
         PAPAN SKOR LCT
       </h1>
       <h2 className="text-2xl md:text-4xl font-bold mb-2 tracking-wider">
-        Juara Harapan - Tingkat SMP
+        Final - Tingkat SD
       </h2>
 
       {/* 2. Bungkus list dengan <AnimatePresence> untuk animasi keluar (exit) */}
